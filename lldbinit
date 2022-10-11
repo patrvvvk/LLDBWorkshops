@@ -1,0 +1,22 @@
+command alias swift expression -l Swift -O --
+command regex refreshUIAfter 's/(.+)/expression -l Swift -O -- defer { CATransaction.flush() }; %1/'
+
+breakpoint set -n AppDelegate.application --one-shot true --auto-continue true
+breakpoint command add
+swift import UIKit
+swift import LLDB_workshops
+p "Registering helpers"
+p " - $poSubviews(_ view: UIView)"
+p " - $cast<T>(addr: UInt, to type: T.Type) -> T"
+p " - $poSubviews(_ view: UIView)"
+swift func $poSubviews(_ view: UIView) { print(view.perform("recursiveDescription")) }
+swift func $cast<T>(addr: UInt, to type: T.Type) -> T { unsafeBitCast(addr, to: type) }
+swift func $poProperties<O>(of object: O) { Mirror(reflecting: object).children.forEach { c in print("- \(c.label ?? "unknown"): \(c.value)\n") } }
+p "Registering private helpers"
+swift extension UIView { func $addDebugText(color: UIColor = UIColor.red) { let layer = CATextLayer(); layer.string = "\(Mirror(reflecting: self).subjectType)"; layer.fontSize = 10; layer.foregroundColor = color.cgColor; layer.alignmentMode = .center; layer.frame = CGRect(x: self.bounds.minX, y: self.bounds.minY + 3, width: self.bounds.width, height: self.bounds.height); self.layer.insertSublayer(layer, at: 0); } }
+swift extension UIView { func $addDebugBorder(color: UIColor = UIColor.red, width: CGFloat = 3) { self.layer.borderColor = color.cgColor; self.layer.borderWidth = width; }}
+swift extension UIView { func $applyDebugVisuals(color: UIColor = UIColor.red, width: CGFloat = 3) { self.addDebugText(color: color); self.addDebugBorder(color: color, width: width); } }
+swift extension UIView { static func $applyDebugVisuals(subviewsOf view: UIView) { view.subviews.forEach { $0.$applyDebugVisuals() }; }; }
+p "Registration done!"
+DONE
+command regex debugVisuals 's/(.+)/expression -l Swift -O -- defer { CATransaction.flush() }; UIView.$applyDebugVisuals(subviewsOf: (%1 as! UIView))/'
