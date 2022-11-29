@@ -15,7 +15,7 @@ swift func $poProperties<O>(of object: O) { Mirror(reflecting: object).children.
 p "Registering private helpers"
 swift extension UIView { func $addDebugText(color: UIColor = UIColor.red) { let layer = CATextLayer(); layer.string = "\(Mirror(reflecting: self).subjectType)"; layer.fontSize = 10; layer.foregroundColor = color.cgColor; layer.alignmentMode = .center; layer.frame = CGRect(x: self.bounds.minX, y: self.bounds.minY + 3, width: self.bounds.width, height: self.bounds.height); self.layer.insertSublayer(layer, at: 0); } }
 swift extension UIView { func $addDebugBorder(color: UIColor = UIColor.red, width: CGFloat = 3) { self.layer.borderColor = color.cgColor; self.layer.borderWidth = width; }}
-swift extension UIView { func $applyDebugVisuals(color: UIColor = UIColor.red, width: CGFloat = 3) { self.addDebugText(color: color); self.addDebugBorder(color: color, width: width); } }
+swift extension UIView { func $applyDebugVisuals(color: UIColor = UIColor.red, width: CGFloat = 3) { self.$addDebugText(color: color); self.$addDebugBorder(color: color, width: width); } }
 swift extension UIView { static func $applyDebugVisuals(subviewsOf view: UIView) { view.subviews.forEach { $0.$applyDebugVisuals() }; }; }
 p "Registration done!"
 DONE
